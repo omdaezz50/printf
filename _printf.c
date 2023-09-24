@@ -1,30 +1,66 @@
 #include "main.h"
 
+void print_buffer(chhar buffer[], int *buff_ind);
 /**
- * _printf - This function is simlute the original printf
- * @format: the string include csuxXo%
- * @...: this is allow to us to add multible convinsion
- * Return: length
+ * _printf - function that produces output according to a format
+ * @format: format
+ * Return: printed chars
  */
-int _printf(const char *format, ...)
+
+int _printf(const char * const format, ...)
 {
-	int buffer_index = 0;
-	int total_printed = 0;
-	char buffer[BUFFER_SIZE];
-	va_list args;
+	int r, printed = 0, printed_chars = 0;
+	int flags, size, width, precision, buff_ind = 0;
+	va_list list;
+	char buffer[BUFF_SIZE];
 
-	if (!format)
-		return (-1);
-	if (format[0] == '%' && !format[1])
+	if (format == NULL)
 		return (-1);
 
-	va_start(args, format);
+	va_start(list, format);
 
-	buffer_index = process_string(format, buffer, args, &total_printed);
+	for (r = 0 ; format && format[r] != '\0'; r++)
+	{
+		if (format[r] != '%')
+		{
+			buffer[buff_ind++] = format[r];
+			if (buff_ind == BUFF_SIZE)
+				printf_buffer(buffer, &buff_ind);
+			/* write(1, &format[r], 1); */
+			printed_chars++;
+		}
+		else
+		{
+			printf_buffer(buffer, &buff_ind);
+			flags = get_flags(format, &r);
+			width = get_width(format, &r, list);
+			precision = get_precision(format, &r, list);
+			size = get_size(format, &r);
+			++r;
+			printed = handle_print(format, &r, list, buffer,
+					flags, width, precision, size);
+			if (printed == -1)
+				return (-1);
+			printed_chars += printed;
+		}
+	}
+	printf_buffer(buffer, &buff_ind);
 
-	total_printed += handle_remaining_buffer(buffer, buffer_index);
+	va_end(list);
 
-	va_end(args);
+	return (printed_chars);
+}
 
-	return (total_printed);
+/**
+ * print_buffer - prints the contents of the buffer
+ * @buffer: chars array
+ * @buff_ind: index to add next
+ * character represents length
+ */
+void print_buffer(char buffer[], int *buff_ind)
+{
+	if (*buff_ind > 0)
+		write(1, &buffer[0], *buff_ind);
+
+	*buff_ind = 0;
 }
