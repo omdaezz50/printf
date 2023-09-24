@@ -1,30 +1,30 @@
 #include "main.h"
 
 /**
- * _printf - Produces output according to a format...
- * @format: Is a character string. The format string...
- * is composed of zero or more directives
- *
- * Return: The number of characters printed (excluding
- * the null byte used to end output to strings)
- **/
+ * _printf - This function is simlute the original printf
+ * @format: the string include csuxXo%
+ * @...: this is allow to us to add multible convinsion
+ * Return: length
+ */
 int _printf(const char *format, ...)
 {
-	int size;
+	int buffer_index = 0;
+	int total_printed = 0;
+	char buffer[BUFFER_SIZE];
 	va_list args;
 
-	if (format == NULL)
+	if (!format)
+		return (-1);
+	if (format[0] == '%' && !format[1])
 		return (-1);
 
-	size = _strlen(format);
-	if (size <= 0)
-		return (0);
-
 	va_start(args, format);
-	size = handler(format, args);
 
-	_putchar(-1);
+	buffer_index = process_string(format, buffer, args, &total_printed);
+
+	total_printed += handle_remaining_buffer(buffer, buffer_index);
+
 	va_end(args);
 
-	return (size);
+	return (total_printed);
 }
